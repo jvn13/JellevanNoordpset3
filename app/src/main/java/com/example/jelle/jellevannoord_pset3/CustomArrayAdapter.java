@@ -8,10 +8,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-/**
- * Created by jelle on 14-11-2017.
- */
-
 public class CustomArrayAdapter extends ArrayAdapter<String> {
     private final Context context;
     private final String[] values;

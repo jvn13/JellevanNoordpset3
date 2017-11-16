@@ -1,24 +1,24 @@
 package com.example.jelle.jellevannoord_pset3;
 
+import android.app.ActionBar;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkError;
-import com.android.volley.NoConnectionError;
-import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.ServerError;
-import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
@@ -27,45 +27,29 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView mTextMessage;
-
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
-
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.navigation_menu:
-                   // mTextMessage.setText(R.string.title_menu);
-                    return true;
-                case R.id.navigation_order:
-                    //mTextMessage.setText(R.string.title_order);
-                    return true;
-            }
-            return false;
-        }
-    };
+    public RequestQueue queue;
+    static public String baseUrl = "https://resto.mprog.nl";
+    public String category = "";
+    private ListView categoriesList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar myToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        mTextMessage = (TextView) findViewById(R.id.message);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="https://resto.mprog.nl/categories";
+        queue = Volley.newRequestQueue(this);
+        categoriesList = findViewById(R.id.categoriesList);
+        categoriesList.setOnItemClickListener(new listViewItemClick());
 
         // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+        StringRequest categoriesRequest = new StringRequest(Request.Method.GET, baseUrl + "/categories",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -80,9 +64,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                             CustomArrayAdapter adapter = new CustomArrayAdapter(MainActivity.this, items);
-                            ListView categoriesList = findViewById(R.id.categoriesList);
                             categoriesList.setAdapter(adapter);
-                            mTextMessage.setText(Arrays.toString(items));
                         } catch(JSONException e) {
                             throw new RuntimeException(e);
                         }
@@ -94,11 +76,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // Add the request to the RequestQueue.
-        queue.add(stringRequest);
+        queue.add(categoriesRequest);
+    }
 
-        String[] values = new String[] { "Android", "iPhone", "WindowsMobile",
-                "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
-                "Linux", "OS/2" };
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
 
+    private class listViewItemClick implements AdapterView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Object entry = parent.getItemAtPosition(position);
+            Intent intent = new Intent(MainActivity.this, CategoryDisplayActivity.class);
+            intent.putExtra("CATEGORY", String.valueOf(entry));
+            startActivity(intent);
+        }
     }
 }
