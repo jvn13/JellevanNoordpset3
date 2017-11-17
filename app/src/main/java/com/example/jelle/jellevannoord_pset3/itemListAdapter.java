@@ -40,7 +40,7 @@ public class itemListAdapter extends ArrayAdapter<menuItem> {
             TextView tvPRice = convertView.findViewById(R.id.price);
 
             tvName.setText(name);
-            tvPRice.setText(String.valueOf(price));
+            tvPRice.setText("€" + String.valueOf(price));
 
             return convertView;
         } else {

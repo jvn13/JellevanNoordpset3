@@ -49,6 +49,9 @@ public class ItemDisplayActivity extends AppCompatActivity {
         TextView title = findViewById(R.id.title);
         title.setText(item.getName());
 
+        TextView price = findViewById(R.id.price);
+        price.setText("€" + String.valueOf(item.getPrice()));
+
         EditText description = findViewById(R.id.description);
         description.setText(item.getDescription());
 
