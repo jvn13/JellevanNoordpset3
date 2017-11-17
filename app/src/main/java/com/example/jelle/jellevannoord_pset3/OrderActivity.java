@@ -96,9 +96,30 @@ public class OrderActivity extends AppCompatActivity {
                 editor.remove(item.getName());
                 editor.apply();
                 setListAdapter();
-                Snackbar.make(findViewById(R.id.constraintLayout), item.getName(), Snackbar.LENGTH_LONG).setAction("Undo", new MyUndoListener()).show();
+                Snackbar.make(findViewById(R.id.constraintLayout), "The " + item.getName() + " is removed", Snackbar.LENGTH_LONG).setAction("Undo", new MyUndoListener()).show();
             }
             return true;
+        }
+    }
+
+    private class MyUndoListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            Set<String> order = sharedPref.getStringSet("Order", null);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            if(order.contains(lastDeleted.getName())) {
+                Snackbar.make(findViewById(R.id.constraintLayout), "The " + lastDeleted.getName() + " is already in your order", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            } else {
+                order.add(lastDeleted.getName());
+                editor.putStringSet("Order",order);
+                editor.putInt(lastDeleted.getName(), lastDeleted.getPrice());
+                editor.apply();
+                setListAdapter();
+                Snackbar.make(findViewById(R.id.constraintLayout), "The " + lastDeleted.getName() + " is added to your order", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
         }
     }
 
@@ -139,27 +160,6 @@ public class OrderActivity extends AppCompatActivity {
                 });
                 // Add the request to the RequestQueue.
                 queue.add(jsObjRequest);
-            }
-        }
-    }
-
-    private class MyUndoListener implements View.OnClickListener {
-
-        @Override
-        public void onClick(View v) {
-            Set<String> order = sharedPref.getStringSet("Order", null);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            if(order.contains(lastDeleted.getName())) {
-                Snackbar.make(findViewById(R.id.constraintLayout), "The " + lastDeleted.getName() + " is already in your order", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            } else {
-                order.add(lastDeleted.getName());
-                editor.putStringSet("Order",order);
-                editor.putInt(lastDeleted.getName(), lastDeleted.getPrice());
-                editor.apply();
-                setListAdapter();
-                Snackbar.make(findViewById(R.id.constraintLayout), "The " + lastDeleted.getName() + " is added to your order", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
             }
         }
     }
