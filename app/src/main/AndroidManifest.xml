@@ -24,7 +24,12 @@
         <activity
             android:name=".CategoryDisplayActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ItemDisplayActivity"></activity>
+        <activity
+            android:name=".ItemDisplayActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".OrderActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

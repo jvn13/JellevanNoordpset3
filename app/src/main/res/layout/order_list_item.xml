@@ -6,24 +6,25 @@
     android:orientation="horizontal">
 
     <TextView
-        android:id="@+id/label"
+        android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dip"
         android:layout_marginRight="16dip"
-        android:layout_weight="19"
+        android:layout_weight="8"
         android:gravity="center_vertical"
         android:minHeight="?android:attr/listPreferredItemHeight"
-        android:textSize="16sp" />
+        android:textSize="15sp" />
 
-    <ImageView
-        android:id="@+id/icon"
+    <TextView
+        android:id="@+id/price"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:layout_marginTop="16dip"
-        android:layout_marginBottom="16dip"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dip"
         android:layout_marginRight="16dip"
-        app:srcCompat="@drawable/ic_keyboard_arrow_right_black_24dp" />
+        android:layout_weight="2"
+        android:gravity="center_vertical"
+        android:minHeight="?android:attr/listPreferredItemHeight"
+        android:textSize="15sp" />
 </LinearLayout>
 

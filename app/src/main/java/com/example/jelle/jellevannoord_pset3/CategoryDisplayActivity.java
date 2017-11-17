@@ -1,11 +1,13 @@
 package com.example.jelle.jellevannoord_pset3;
 
 import android.content.Intent;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.ArrayMap;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -24,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +38,7 @@ public class CategoryDisplayActivity extends AppCompatActivity {
 
     private ListView itemsList;
     private ArrayList<menuItem> itemsArrayList = new ArrayList();
+    OrderBadge orderBadge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +46,7 @@ public class CategoryDisplayActivity extends AppCompatActivity {
         setContentView(R.layout.activity_category_display);
         Toolbar myToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         Intent intent = getIntent();
@@ -50,14 +55,6 @@ public class CategoryDisplayActivity extends AppCompatActivity {
         RequestQueue queue = Volley.newRequestQueue(this);
         itemsList = findViewById(R.id.itemsList);
         itemsList.setOnItemClickListener(new listViewItemClick());
-        /*
-        String[] items = {"item 1", "item 2"};
-        CustomArrayAdapter adapter = new CustomArrayAdapter(CategoryDisplayActivity.this, items);
-        itemsList.setAdapter(adapter);
-        */
-
-        HashMap<String, String> params = new HashMap();
-        params.put("category", "entrees");
 
         JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, MainActivity.baseUrl + "/menu?category=" + category, null,
                 new Response.Listener<JSONObject>() {
@@ -74,9 +71,9 @@ public class CategoryDisplayActivity extends AppCompatActivity {
                         }
                     }
                     ArrayList<String> names = new ArrayList();
-                    for (menuItem m: itemsArrayList) { names.add(m.name); }
+                    for (menuItem m: itemsArrayList) { names.add(m.getName()); }
                     String[] namesArray = new String[names.size()];
-                    CustomArrayAdapter adapter = new CustomArrayAdapter(CategoryDisplayActivity.this, names.toArray(namesArray));
+                    itemListAdapter adapter = new itemListAdapter(getApplicationContext(), R.layout.custom_list_item, itemsArrayList);
                     itemsList.setAdapter(adapter);
                 } catch(JSONException e) {
                     throw new RuntimeException(e);
@@ -87,7 +84,7 @@ public class CategoryDisplayActivity extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // TODO Auto-generated method stub
-
+                Toast.makeText(getApplicationContext(),error.getMessage(),Toast.LENGTH_LONG).show();
             }
         });
         queue.add(jsObjRequest);
@@ -96,38 +93,46 @@ public class CategoryDisplayActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        final MenuItem menuItem = menu.findItem(R.id.action_cart);
+        View actionView = MenuItemCompat.getActionView(menuItem);
+        orderBadge = new OrderBadge((TextView) actionView.findViewById(R.id.cart_badge));
+        orderBadge.onOrderSetChanged(getApplicationContext());
+        actionView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(menuItem);
+            }
+        });
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            case R.id.action_cart:
+                Intent intent = new Intent(CategoryDisplayActivity.this, OrderActivity.class);
+                startActivity(intent);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        invalidateOptionsMenu();
     }
 
     private class listViewItemClick implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            TextView textView = findViewById(R.id.textView);
-            menuItem selectec = itemsArrayList.get(position);
-            /*
-            Intent intent = new Intent(CategoryDisplayActivity.this, CategoryDisplayActivity.class);
-            intent.putExtra("CATEGORY", String.valueOf(entry));
+            menuItem selected = itemsArrayList.get(position);
+            Intent intent = new Intent(CategoryDisplayActivity.this, ItemDisplayActivity.class);
+            intent.putExtra("MENU_ITEM", selected);
             startActivity(intent);
-            */
-        }
-    }
-
-    private class menuItem {
-
-        public String category;
-        public String description;
-        public int price;
-        public String image;
-        public int id;
-        public String name;
-
-        public menuItem(String cat, String desc, int aPrice, String img, int aId, String aName) {
-            category = cat;
-            description = desc;
-            price = aPrice;
-            image = img;
-            id = aId;
-            name = aName;
         }
     }
 }

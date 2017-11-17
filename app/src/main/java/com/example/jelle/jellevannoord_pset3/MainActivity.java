@@ -1,14 +1,12 @@
 package com.example.jelle.jellevannoord_pset3;
 
-import android.app.ActionBar;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.Snackbar;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -20,21 +18,22 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     public RequestQueue queue;
     static public String baseUrl = "https://resto.mprog.nl";
-    public String category = "";
     private ListView categoriesList;
+    OrderBadge orderBadge;
+    Menu mainMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,29 +48,30 @@ public class MainActivity extends AppCompatActivity {
         categoriesList.setOnItemClickListener(new listViewItemClick());
 
         // Request a string response from the provided URL.
-        StringRequest categoriesRequest = new StringRequest(Request.Method.GET, baseUrl + "/categories",
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            JSONObject test = new JSONObject(response);
-                            JSONArray jArray = test.getJSONArray("categories");
+        JsonObjectRequest categoriesRequest = new JsonObjectRequest(Request.Method.GET, MainActivity.baseUrl + "/categories", null,
+                new Response.Listener<JSONObject>() {
 
-                            String[] items = new String[jArray.length()];
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONArray jArray = response.getJSONArray("categories");
+                            ArrayList<menuItem> itemList = new ArrayList<>();
                             if (jArray != null) {
                                 for (int i=0;i<jArray.length();i++){
-                                    items[i] = jArray.getString(i);
+                                    itemList.add(new menuItem(jArray.getString(i)));
                                 }
                             }
-                            CustomArrayAdapter adapter = new CustomArrayAdapter(MainActivity.this, items);
+                            itemListAdapter adapter = new itemListAdapter(getApplicationContext(), R.layout.custom_list_item, itemList);
                             categoriesList.setAdapter(adapter);
                         } catch(JSONException e) {
                             throw new RuntimeException(e);
                         }
                     }
                 }, new Response.ErrorListener() {
+
             @Override
             public void onErrorResponse(VolleyError error) {
+                // TODO Auto-generated method stub
                 Toast.makeText(getApplicationContext(),error.getMessage(),Toast.LENGTH_LONG).show();
             }
         });
@@ -81,17 +81,45 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        mainMenu = menu;
         getMenuInflater().inflate(R.menu.main_menu, menu);
+        final MenuItem menuItem = menu.findItem(R.id.action_cart);
+        View actionView = MenuItemCompat.getActionView(menuItem);
+        orderBadge = new OrderBadge((TextView) actionView.findViewById(R.id.cart_badge));
+        orderBadge.onOrderSetChanged(getApplicationContext());
+        actionView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(menuItem);
+            }
+        });
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_cart:
+                Intent intent = new Intent(MainActivity.this, OrderActivity.class);
+                startActivity(intent);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private class listViewItemClick implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Object entry = parent.getItemAtPosition(position);
+            menuItem entry = (menuItem) parent.getItemAtPosition(position);
             Intent intent = new Intent(MainActivity.this, CategoryDisplayActivity.class);
-            intent.putExtra("CATEGORY", String.valueOf(entry));
+            intent.putExtra("CATEGORY", entry.getName());
             startActivity(intent);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        invalidateOptionsMenu();
     }
 }
