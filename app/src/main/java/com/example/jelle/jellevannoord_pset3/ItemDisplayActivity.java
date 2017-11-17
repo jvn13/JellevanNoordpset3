@@ -42,6 +42,8 @@ public class ItemDisplayActivity extends AppCompatActivity {
         Intent intent = getIntent();
         item = (menuItem) intent.getSerializableExtra("MENU_ITEM");
 
+        getSupportActionBar().setTitle(item.getName());
+
         sharedPref = getApplicationContext().getSharedPreferences("ORDERS", Context.MODE_PRIVATE);
 
         TextView title = findViewById(R.id.title);

@@ -52,6 +52,8 @@ public class CategoryDisplayActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String category = intent.getStringExtra("CATEGORY");
 
+        getSupportActionBar().setTitle(category);
+
         RequestQueue queue = Volley.newRequestQueue(this);
         itemsList = findViewById(R.id.itemsList);
         itemsList.setOnItemClickListener(new listViewItemClick());
